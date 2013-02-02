@@ -8,25 +8,34 @@ jQuery(document).ready(function(){
         return;
     }
 
-    var uploadbtn = jQuery('#uploadButton').attr('disabled', true);
-    var filebox = jQuery('input[id=fileBox]');
-    var namebox = jQuery('#nameBox');
     var uploadarea = jQuery('#uploadArea');
+    var uploadbtn;
+    var filebox;
+    var namebox;
     var progressbar; 
     var percentElm;
     var mbElm;
 
-    (function fileUploadFormPritify(){
-        jQuery(document).on('click', 'a#choseFileBtn', function(){
+    var refresh = function(){
+        uploadarea.html('<input type="file" id="fileBox" style="display:none"></input>' +
+                       '<div class="input-append">' +
+                       '<input type="text" id="nameBox"type="text"></input>' +
+                       '<a class="btn" id="choseFileBtn">Chose file</a>' +
+                       '</div>' +
+                       '<button type="button" id="uploadButton" class="btn btn-large btn-primary">Upload</button>');
+        uploadbtn = jQuery('#uploadButton').attr('disabled', true);
+        filebox = jQuery('input[id=fileBox]');
+        namebox = jQuery('#nameBox');
+        uploadarea = jQuery('#uploadArea');
+        // file upload form pritify 
+        jQuery('a#choseFileBtn').on('click', function(){
             filebox.click();
         });
         filebox.change(function(){
             namebox.val($(this).val());
         });
-    })();
-  
-    var refresh = function(){
-        location.reload(true);
+        uploadbtn.on('click', startUpload);  
+        filebox.on('change', fileChosen);
     };
 
     var receiveDone = function(){
@@ -67,12 +76,12 @@ jQuery(document).ready(function(){
         fileUploader.upload();
     };
 
+    var fileUploadFormPritify = function() {
+    };
+
     var fileUploader = new FileUploader();
     fileUploader.setReceiveDataDoneCallback(receiveDone);
     fileUploader.setReceiveDataCallback(updateBar);
-    
-    uploadbtn.on('click', startUpload);  
-    filebox.on('change', fileChosen);
-
+    refresh();
 });
 

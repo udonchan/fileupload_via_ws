@@ -25,10 +25,10 @@ var uploadedFileDir = path.join(staticFileDir, "files");
 io.sockets.on('connection', function (socket) {
     //data contains the variables that we passed through in the html file
     socket.on('file_upload_start', function (data) { 
-        var name = data['name'];
+        var name = data.name;
         //Create a new Entry in The Files Variable
         var file = files[name] = {  
-            fileSize : data['size'],
+            fileSize : data.size,
             data     : "",
             downloaded : 0
         };
@@ -36,7 +36,7 @@ io.sockets.on('connection', function (socket) {
         try{
             var stat = fs.statSync(path.join(cacheDir, name));
             if(stat.isFile()) {
-                file['downloaded'] = Stat.size;
+                file.downloaded = Stat.size;
                 place = stat.size / bufsize;
             }
         } catch(er){} //It's a New File
@@ -47,20 +47,20 @@ io.sockets.on('connection', function (socket) {
                 return;
             } 
             //We store the file handler so we can write to it later
-            file['handler'] = fd; 
+            file.handler = fd; 
             socket.emit('moreData', { 'place' : place, 'percent' : 0 });
         });
     });
     
     socket.on('upload_ready', function (data){
-        var name = data['name'];
+        var name = data.name;
         var file = files[name];
-        file['downloaded'] += data['data'].length;
-        file['data'] += data['data'];
+        file.downloaded += data.data.length;
+        file.data += data.data;
 
         //If File is Fully Uploaded
-        if(file['downloaded'] == file['fileSize']) {
-            fs.write(file['handler'], file['data'], null, 'Binary', function(err, Writen){
+        if(file.downloaded == file.fileSize) {
+            fs.write(file.handler, file.data, null, 'Binary', function(err, Writen){
                 var inp = fs.createReadStream(path.join(cacheDir, name));
                 var out = fs.createWriteStream(path.join(uploadedFileDir, name));
                 util.pump(inp, out, function(){
@@ -72,16 +72,17 @@ io.sockets.on('connection', function (socket) {
             });
             return;
         }
-        if(file['data'].length > 10485760){ //If the Data Buffer reaches 10MB
-            fs.writeSync(file['handler'], file['data'], null, 'Binary');
-            file['data'] = ""; //Reset The Buffer
+        //If the Data Buffer reaches 10MB
+        if(file.data.length > 10485760){
+            fs.writeSync(file.handler, file.data, null, 'Binary');
+            //Reset The Buffer
+            file.data = ""; 
         } 
-        var place = file['downloaded'] / bufsize;
-        var percent = (file['downloaded'] / file['fileSize']) * 100;
+        var place = file.downloaded / bufsize;
+        var percent = (file.downloaded / file.fileSize) * 100;
         socket.emit('moreData', { 'place' : place, 'percent' :  percent});
     });
 });
-
 
 app.configure(function(){
     app.set('views', __dirname + '/views');
