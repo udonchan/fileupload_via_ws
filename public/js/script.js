@@ -57,18 +57,16 @@ jQuery(document).ready(function(){
 
     var refresh = function(){
         uploadarea.html('<input type="file" id="fileBox" style="display:none"></input>' +
-                        '<div class="input-append">' +
-                        '<input type="text" id="nameBox"type="text"></input>' +
-                        '<a class="btn" id="choseFileBtn">Chose file</a>' +
-                        '</div>' +
+                        '<div id="prityform">' +
+                        '<input type="text" id="nameBox" type="text" placeholder="Please Click Here to Chose a File">' +
+                        '</input></div>' +
                         '<div id="fileDropBox">or Drop File Here</div>'+
                         '<button type="button" id="uploadButton" class="btn btn-large btn-primary">Upload</button>');
         uploadbtn = jQuery('#uploadButton').attr('disabled', true);
         filebox = jQuery('input[id=fileBox]');
         namebox = jQuery('#nameBox');
         filedropbox = jQuery("#fileDropBox")
-        // file upload form pritify 
-        jQuery('a#choseFileBtn').on('click', function(){
+        jQuery('#nameBox').on('click', function(){
             filebox.click();
         });
         uploadbtn.on('click', startUpload);  
