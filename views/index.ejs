@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>File Uploader via WebSocket</title>
+    <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/FileUploader.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/js/script.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap-responsive.min.css" />
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/css/style.css" />
+  </head>
+  <body>
+    <div id="uploadBox">
+      <h2>File Uploader via WebSocket</h2>
+      <div id="uploadArea">
+        <input type="file" id="fileBox" style="display:none"></input>
+        <div class="input-append">
+          <input type="text" id="nameBox"type="text"></input>
+          <a class="btn" id="choseFileBtn">Chose file</a>
+        </div>
+        <button type="button" id="uploadButton" class="btn btn-large btn-primary">Upload</button>
+      </div>
+    </div>
+  </body>
+</html>
