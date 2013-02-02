@@ -5,9 +5,7 @@ var FileUploader = function(){
     var bufsize = 524288; // 512KB
 
     if(window.File.prototype.slice === undefined) {
-        window.File.prototype.slice = function(p, length){
-            (window.File.prototype.webkitSlice || window.File.prototype.mozSlice)(p, p+length);
-        }
+        window.File.prototype.slice = (window.File.prototype.webkitSlice || window.File.prototype.mozSlice);
     }
     this.socket = io.connect(location.hostname === "localhost" ? "127.0.0.1:" + location.port : location.host);
     this.fReader = new FileReader();
@@ -18,7 +16,7 @@ var FileUploader = function(){
         }
         //The Next Blocks Starting Position
         var place = data['place'] * bufsize; 
-        var newFile = _this.targetFile.slice(place, place + Math.min(bufsize, (_this.targetFile.size - place)));
+        var newFile = _this.targetFile.slice(place, place + Math.min(bufsize, _this.targetFile.size - place));
         _this.fReader.readAsBinaryString(newFile);
     });
 
