@@ -3,6 +3,8 @@
 var express = module.exports = require('express');
 var http = require('http');
 var path = require('path');
+var fs = require('fs')
+var util = require('util')
 
 var app = module.exports = express();
 var port = 8080;
@@ -12,11 +14,13 @@ server.listen(port, function(){
     console.log("Express server listening on port " + port);
 });
 var io = require('socket.io').listen(server);
-var fs = require('fs')
-var util = require('util')
 
 var files = {};
 var bufsize = 524288;
+
+var cacheDir = path.join(__dirname, "cache");
+var staticFileDir = path.join(__dirname, "public");
+var uploadedFileDir = path.join(staticFileDir, "files");
 
 io.sockets.on('connection', function (socket) {
     //data contains the variables that we passed through in the html file
@@ -25,19 +29,19 @@ io.sockets.on('connection', function (socket) {
         //Create a new Entry in The Files Variable
 		var file = files[name] = {  
 			fileSize : data['size'],
-			Data	 : "",
+			data	 : "",
 			downloaded : 0
 		};
 		var place = 0;
 		try{
-			var stat = fs.statSync(path.join(__dirname, 'cache', name));
+			var stat = fs.statSync(path.join(cacheDir, name));
 			if(stat.isFile()) {
 				file['downloaded'] = Stat.size;
 				place = stat.size / bufsize;
 			}
 		} catch(er){} //It's a New File
 
-		fs.open(path.join(__dirname, "cache", name), 'a', "0755", function(err, fd){
+		fs.open(path.join(cacheDir, name), 'a', "0755", function(err, fd){
 			if(err) {
 				console.log(err);
                 return;
@@ -52,25 +56,25 @@ io.sockets.on('connection', function (socket) {
 		var name = data['name'];
         var file = files[name];
 		file['downloaded'] += data['data'].length;
-		file['Data'] += data['data'];
+		file['data'] += data['data'];
 
         //If File is Fully Uploaded
 		if(file['downloaded'] == file['fileSize']) {
-			fs.write(file['handler'], file['Data'], null, 'Binary', function(err, Writen){
-				var inp = fs.createReadStream(path.join(__dirname, "temp", name));
-				var out = fs.createWriteStream(path.join(__dirname, "public", "files", name));
+			fs.write(file['handler'], file['data'], null, 'Binary', function(err, Writen){
+				var inp = fs.createReadStream(path.join(cacheDir, name));
+				var out = fs.createWriteStream(path.join(uploadedFileDir, name));
 				util.pump(inp, out, function(){
                     //This Deletes The Temporary File
-					fs.unlink("cache/" + name, function () { 
+					fs.unlink(path.join(cacheDir, name), function () { 
 						socket.emit('done');
 					});
 				});
 			});
             return;
 		}
-        if(file['Data'].length > 10485760){ //If the Data Buffer reaches 10MB
-			fs.writeSync(file['handler'], file['Data'], null, 'Binary');
-			file['Data'] = ""; //Reset The Buffer
+        if(file['data'].length > 10485760){ //If the Data Buffer reaches 10MB
+			fs.writeSync(file['handler'], file['data'], null, 'Binary');
+			file['data'] = ""; //Reset The Buffer
 		} 
 		var place = file['downloaded'] / bufsize;
 		var percent = (file['downloaded'] / file['fileSize']) * 100;
@@ -87,7 +91,7 @@ app.configure(function(){
     app.use(express.bodyParser());
     app.use(express.methodOverride());
     app.use(app.router);
-    app.use(express.static(path.join(__dirname, 'public')));
+    app.use(express.static(staticFileDir));
 });
 
 app.configure('development', function(){
