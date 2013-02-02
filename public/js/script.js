@@ -11,6 +11,7 @@ jQuery(document).ready(function(){
     var uploadarea = jQuery('#uploadArea');
     var uploadbtn;
     var filebox;
+    var filedropbox;
     var namebox;
     var progressbar; 
     var percentElm;
@@ -32,16 +33,15 @@ jQuery(document).ready(function(){
     };
     
     var startUpload = function(){
-        if("" === filebox.val()) {
+        if(fileUploader.targetFile == undefined) {
             alert("Please Select A File");
             return;
         }
-        var content = '<span id="nameArea">Uploading ' + fileUploader.targetFile.name + ' as ' + name + '</span>' +
-            '<div id="progressContainer" class="progress progress-striped">' + 
-            '<div id="progressBar" class="bar"></div></div><span id="percent">50%</span>' +
-            '<span id="uploaded"> - <span id="MB">0</span>/' +
-            Math.round(fileUploader.targetFile.size / 1048576) + 'MB</span>';
-        uploadarea.html(content);
+        uploadarea.html('<span id="nameArea">Uploading ' + fileUploader.targetFile.name + '</span>' +
+                        '<div id="progressContainer" class="progress progress-striped">' + 
+                        '<div id="progressBar" class="bar"></div></div><span id="percent">0%</span>' +
+                        '<span id="uploaded"> - <span id="MB">0</span>/' +
+                        Math.round(fileUploader.targetFile.size / 1048576) + 'MB</span>');
         progressbar = jQuery('#progressBar');
         percentElm = jQuery('#percent');
         mbElm = jQuery('#MB');
@@ -50,29 +50,50 @@ jQuery(document).ready(function(){
 
     var fileChosen = function(event) {
         fileUploader.fileChosen(event);
+        var files = event.target.files || event.originalEvent.dataTransfer.files;
+        namebox.val(files[0].name);
         uploadbtn.attr('disabled', false);
     };
 
     var refresh = function(){
         uploadarea.html('<input type="file" id="fileBox" style="display:none"></input>' +
-                       '<div class="input-append">' +
-                       '<input type="text" id="nameBox"type="text"></input>' +
-                       '<a class="btn" id="choseFileBtn">Chose file</a>' +
-                       '</div>' +
-                       '<button type="button" id="uploadButton" class="btn btn-large btn-primary">Upload</button>');
+                        '<div class="input-append">' +
+                        '<input type="text" id="nameBox"type="text"></input>' +
+                        '<a class="btn" id="choseFileBtn">Chose file</a>' +
+                        '</div>' +
+                        '<div id="fileDropBox">or Drop File Here</div>'+
+                        '<button type="button" id="uploadButton" class="btn btn-large btn-primary">Upload</button>');
         uploadbtn = jQuery('#uploadButton').attr('disabled', true);
         filebox = jQuery('input[id=fileBox]');
         namebox = jQuery('#nameBox');
-        uploadarea = jQuery('#uploadArea');
+        filedropbox = jQuery("#fileDropBox")
         // file upload form pritify 
         jQuery('a#choseFileBtn').on('click', function(){
             filebox.click();
         });
-        filebox.change(function(){
-            namebox.val($(this).val());
-        });
         uploadbtn.on('click', startUpload);  
         filebox.on('change', fileChosen);
+        filedropbox.on('dragenter', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+        }).on('dragover', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            $(this).addClass('hover');
+        }).on('dragleave', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            $(this).removeClass('hover');
+        }).on("drop", function(e){
+            if(e.originalEvent.dataTransfer){
+                if(e.originalEvent.dataTransfer.files.length) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileChosen(e);
+                }
+            }
+        });
+
     };
 
     var fileUploader = new FileUploader();
@@ -80,4 +101,3 @@ jQuery(document).ready(function(){
     fileUploader.setReceiveDataCallback(updateBar);
     refresh();
 });
-

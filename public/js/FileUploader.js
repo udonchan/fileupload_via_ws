@@ -26,6 +26,7 @@ var FileUploader = function(){
         if(_this.receiveDataDoneCallback !== undefined){
            _this.receiveDataDoneCallback(data);
         }
+        delete this.targetFile;
     });
 };
 
@@ -39,7 +40,8 @@ FileUploader.prototype.upload = function(){
 
 FileUploader.prototype.fileChosen = function(event){
     var _this = this;
-    this.targetFile = event.target.files[0];
+    var files = event.target.files || event.originalEvent.dataTransfer.files;
+    this.targetFile = files[0];
     this.fReader.onload = function(event){
         _this.socket.emit('upload_ready', {'name' : _this.targetFile.name, 'data' : event.target.result});
     }
